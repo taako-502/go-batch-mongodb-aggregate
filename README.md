@@ -1,3 +1,3 @@
 # Go Batch MongoDB Aggregate
 
-<img width="596" alt="Screenshot 2024-03-07 at 4 24 59 PM" src="https://github.com/taako-502/go-batch-mongodb-aggregate/assets/36348377/a4065c86-7b2a-4db5-a319-adc50869481d">
+![スコアの集計処理の速度測定](https://github.com/taako-502/go-batch-mongodb-aggregate/assets/36348377/3fcf50d8-5c0f-4b98-9d95-c7e464579035)
