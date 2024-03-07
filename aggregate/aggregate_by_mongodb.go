@@ -2,7 +2,6 @@ package aggregate
 
 import (
 	"context"
-	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -10,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// TODO: 順位も計算してデータベースに登録する
 func AggregateByMongoDB(ctx context.Context, client *mongo.Client) {
 	// pointsコレクションからデータを集計
 	pointsCollection := client.Database("source").Collection("points")
@@ -26,11 +26,6 @@ func AggregateByMongoDB(ctx context.Context, client *mongo.Client) {
 	var results []bson.M
 	if err = cursor.All(ctx, &results); err != nil {
 		log.Fatal(err)
-	}
-
-	// 結果を表示
-	for _, result := range results {
-		fmt.Printf("UserID: %v, TotalPoint: %v\n", result["_id"], result["totalPoint"])
 	}
 
 	// rankingデータベースのrankingテーブルを更新

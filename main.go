@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"time"
 
@@ -14,11 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
-
-type pattern struct {
-	numberOfUsers  int
-	numberOfPoints int
-}
 
 func main() {
 	ctx := context.Background()
@@ -33,62 +27,26 @@ func main() {
 		}
 	}()
 
-	// 計測パターン
-	patterns := []pattern{
-		{numberOfUsers: 1000, numberOfPoints: 100},
-		{numberOfUsers: 1000, numberOfPoints: 1000},
-		{numberOfUsers: 1000, numberOfPoints: 10000},
-		{numberOfUsers: 10000, numberOfPoints: 100},
-		{numberOfUsers: 10000, numberOfPoints: 1000},
-		{numberOfUsers: 10000, numberOfPoints: 10000},
-		{numberOfUsers: 100000, numberOfPoints: 100},
-		{numberOfUsers: 100000, numberOfPoints: 1000},
-		{numberOfUsers: 100000, numberOfPoints: 10000},
-		{numberOfUsers: 1000000, numberOfPoints: 100},
-		{numberOfUsers: 1000000, numberOfPoints: 1000},
-		{numberOfUsers: 1000000, numberOfPoints: 10000},
-		// 極端に増やしてみる
-		{numberOfUsers: 100000000, numberOfPoints: 1000000},
-	}
+	// usersをコンソールに表示
+	mr := mainReciever{ctx, client}
+	mr.printSourceUsers()
 
-	for _, p := range patterns {
-		// コレクションを初期化
-		mr := mainReciever{ctx, client}
-		mr.cleanUp("source", "users")
-		mr.cleanUp("source", "points")
-		mr.cleanUp("aggregate", "leaderboard")
+	// pointsをコンソールに表示
+	mr.printSourcePoints()
 
-		// ユーザーデータを挿入
-		users := generateUsers(p.numberOfUsers)
-		client.Database("source").Collection("users").InsertMany(ctx, users)
+	// MongoDBで集計
+	startTime := time.Now()
+	aggregate.AggregateByMongoDB(ctx, client)
+	monogDBElapsed := time.Since(startTime)
 
-		// ポイントデータを挿入
-		var userIDs []primitive.ObjectID
-		for _, item := range users {
-			if p, ok := item.(points); ok {
-				userIDs = append(userIDs, p.userID)
-			}
-		}
-		client.Database("source").Collection("points").InsertMany(ctx, generatePoints(userIDs, p.numberOfPoints))
+	// Goで集計
+	startTime = time.Now()
+	aggregate.AggregateByGo(ctx, client)
+	goElapsed := time.Since(startTime)
 
-		// MongoDBで集計
-		startTime := time.Now()
-		aggregate.AggregateByMongoDB(ctx, client)
-		elapsed := time.Since(startTime)
-		fmt.Printf("Method: MongoDB	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
-		if err := mr.createLog("MongoDB", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
-			log.Fatal(err)
-		}
-
-		// Goで集計
-		startTime = time.Now()
-		aggregate.AggregateByGo(ctx, client)
-		elapsed = time.Since(startTime)
-		fmt.Printf("Method: Go	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
-		if err := mr.createLog("Go", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
-			log.Fatal(err)
-		}
-	}
+	fmt.Println("") // 改行
+	fmt.Printf("Method: MongoDB\t集計にかかった時間: %s\n", monogDBElapsed)
+	fmt.Printf("Method: Go\t集計にかかった時間: %s\n", goElapsed)
 }
 
 type mainReciever struct {
@@ -96,48 +54,51 @@ type mainReciever struct {
 	client *mongo.Client
 }
 
-func (m mainReciever) cleanUp(databaseName, collectionName string) {
-	collection := m.client.Database(databaseName).Collection(collectionName)
-	_, err := collection.DeleteMany(m.ctx, map[string]interface{}{})
+type user struct {
+	ID   primitive.ObjectID `bson:"_id"`
+	Name string             `bson:"name"`
+}
+
+type point struct {
+	ID     primitive.ObjectID `bson:"_id"`
+	UserID string             `bson:"userId"`
+	Point  int                `bson:"point"`
+}
+
+func (m mainReciever) printSourceUsers() {
+	// usersコレクションからデータを取得
+	var users []user
+	userCollection := m.client.Database("source").Collection("users")
+	cursor, err := userCollection.Find(m.ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-type users struct {
-	id   primitive.ObjectID `bson:"id"`
-	name string             `bson:"name"`
-}
-
-func generateUsers(numberOfUsers int) []interface{} {
-	var generatedUsers []interface{}
-	for i := range numberOfUsers {
-		user := users{id: primitive.NewObjectID(), name: fmt.Sprintf("user%v", i)}
-		generatedUsers = append(generatedUsers, user)
+	if err = cursor.All(m.ctx, &users); err != nil {
+		log.Fatal(err)
 	}
-	return generatedUsers
-}
 
-type points struct {
-	id     primitive.ObjectID `bson:"id"`
-	userID primitive.ObjectID `bson:"userId"`
-	point  int                `bson:"point"`
-}
-
-func generatePoints(userIDs []primitive.ObjectID, numberOfPoints int) []interface{} {
-	var generatedPoints []interface{}
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
-
-	for _, ID := range userIDs {
-		for range numberOfPoints {
-			generatedPoints = append(generatedPoints, points{id: primitive.NewObjectID(), userID: ID, point: r.Intn(2000) + 1}) // 1〜2000のランダムな値
-		}
+	// 取得したusersのデータを出力
+	fmt.Println("# users:")
+	for _, user := range users {
+		fmt.Printf("ID: %s\tName: %s\n", user.ID.Hex(), user.Name)
 	}
-	return generatedPoints
 }
 
-func (m mainReciever) createLog(method string, numberOfUsers int, numberOfPoints int, elapsed time.Duration) error {
-	_, err := m.client.Database("aggregate").Collection("logs").InsertOne(m.ctx, bson.M{"method": method, "numberOfUsers": numberOfUsers, "numberOfPoints": numberOfPoints, "elapsed": elapsed})
-	return err
+func (m mainReciever) printSourcePoints() {
+	// pointsコレクションからデータを取得
+	var points []point
+	pointsCollection := m.client.Database("source").Collection("points")
+	cursor, err := pointsCollection.Find(m.ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err = cursor.All(m.ctx, &points); err != nil {
+		log.Fatal(err)
+	}
+
+	// 取得したpointsのデータを出力
+	fmt.Println("# points:")
+	for _, point := range points {
+		fmt.Printf("ID: %s\tUserID: %s\tPoint: %d\n", point.ID.Hex(), point.UserID, point.Point)
+	}
 }

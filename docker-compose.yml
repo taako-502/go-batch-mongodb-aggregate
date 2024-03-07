@@ -17,8 +17,8 @@ services:
     ports:
       - "27017:27017"
 
-  # mongo_ci:
-  #   container_name: go_batch_mongodb_aggregate_mongo_ci
-  #   <<: *commons
-  #   ports:
-  #     - "27018:27017"
+  mongo_benchimark:
+    container_name: go_batch_mongodb_aggregate_mongo_benchimark
+    <<: *commons
+    ports:
+      - "27018:27017"
