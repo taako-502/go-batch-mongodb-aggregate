@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// TODO: 順位も計算してデータベースに登録する
 func AggregateByGo(ctx context.Context, client *mongo.Client) {
 	pointsCollection := client.Database("source").Collection("points")
 
