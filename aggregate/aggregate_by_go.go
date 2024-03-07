@@ -18,7 +18,7 @@ func AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) {
 
 	userPoints := make(map[string]int)
 	for _, p := range points {
-		userPoints[p.UserID] += p.Point
+		userPoints[p.UserID.Hex()] += p.Point
 	}
 
 	// 結果を表示

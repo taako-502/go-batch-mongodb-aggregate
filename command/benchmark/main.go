@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
+	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,7 +48,9 @@ func main() {
 		{numberOfUsers: 1000000, numberOfPoints: 100},
 		{numberOfUsers: 1000000, numberOfPoints: 1000},
 		{numberOfUsers: 1000000, numberOfPoints: 10000},
-		// 極端に増やしてみる
+		{numberOfUsers: 10000000, numberOfPoints: 10000},
+		{numberOfUsers: 10000000, numberOfPoints: 100000},
+		{numberOfUsers: 10000000, numberOfPoints: 1000000},
 		{numberOfUsers: 100000000, numberOfPoints: 1000000},
 	}
 
@@ -65,8 +68,8 @@ func main() {
 		// ポイントデータを挿入
 		var userIDs []primitive.ObjectID
 		for _, item := range users {
-			if p, ok := item.(points); ok {
-				userIDs = append(userIDs, p.userID)
+			if p, ok := item.(infrastructure.Point); ok {
+				userIDs = append(userIDs, p.UserID)
 			}
 		}
 		client.Database("source").Collection("points").InsertMany(ctx, generatePoints(userIDs, p.numberOfPoints))
@@ -75,7 +78,7 @@ func main() {
 		startTime := time.Now()
 		aggregate.AggregateByMongoDB(ctx, client, false)
 		elapsed := time.Since(startTime)
-		fmt.Printf("Method: MongoDB	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
+		fmt.Printf("Method: MongoDB\tユーザ数: %d\t1ユーザあたりのポイント数: %d\t集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
 		if err := mr.createLog("MongoDB", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
 			log.Fatal(err)
 		}
@@ -84,7 +87,7 @@ func main() {
 		startTime = time.Now()
 		aggregate.AggregateByGo(ctx, client, false)
 		elapsed = time.Since(startTime)
-		fmt.Printf("Method: Go	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
+		fmt.Printf("Method: Go\tユーザ数: %d\t1ユーザあたりのポイント数: %d\t集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
 		if err := mr.createLog("Go", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
 			log.Fatal(err)
 		}
@@ -118,12 +121,6 @@ func generateUsers(numberOfUsers int) []interface{} {
 	return generatedUsers
 }
 
-type points struct {
-	id     primitive.ObjectID `bson:"id"`
-	userID primitive.ObjectID `bson:"userId"`
-	point  int                `bson:"point"`
-}
-
 func generatePoints(userIDs []primitive.ObjectID, numberOfPoints int) []interface{} {
 	var generatedPoints []interface{}
 	source := rand.NewSource(time.Now().UnixNano())
@@ -131,13 +128,18 @@ func generatePoints(userIDs []primitive.ObjectID, numberOfPoints int) []interfac
 
 	for _, ID := range userIDs {
 		for range numberOfPoints {
-			generatedPoints = append(generatedPoints, points{id: primitive.NewObjectID(), userID: ID, point: r.Intn(2000) + 1}) // 1〜2000のランダムな値
+			generatedPoints = append(generatedPoints, infrastructure.Point{ID: primitive.NewObjectID(), UserID: ID, Point: r.Intn(2000) + 1}) // 1〜2000のランダムな値
 		}
 	}
 	return generatedPoints
 }
 
 func (m mainReciever) createLog(method string, numberOfUsers int, numberOfPoints int, elapsed time.Duration) error {
-	_, err := m.client.Database("aggregate").Collection("logs").InsertOne(m.ctx, bson.M{"method": method, "numberOfUsers": numberOfUsers, "numberOfPoints": numberOfPoints, "elapsed": elapsed})
+	_, err := m.client.Database("aggregate").Collection("logs").InsertOne(m.ctx, bson.M{
+		"method":         method,
+		"numberOfUsers":  numberOfUsers,
+		"numberOfPoints": numberOfPoints,
+		"elapsed":        elapsed,
+	})
 	return err
 }

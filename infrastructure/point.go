@@ -11,7 +11,7 @@ import (
 
 type Point struct {
 	ID     primitive.ObjectID `bson:"_id"`
-	UserID string             `bson:"userId"`
+	UserID primitive.ObjectID `bson:"userId"`
 	Point  int                `bson:"point"`
 }
 

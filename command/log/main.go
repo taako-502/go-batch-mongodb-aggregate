@@ -23,7 +23,7 @@ type logEntry struct {
 func main() {
 	ctx := context.Background()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_BENCHIMARK_URL")))
 	if err != nil {
 		log.Fatal(err)
 	}
