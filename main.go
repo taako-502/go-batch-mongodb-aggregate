@@ -33,7 +33,7 @@ func main() {
 	fmt.Printf("MongoDBによる集計にかかった時間: %s\n", elapsed)
 
 	startTime = time.Now()
-	aggregate.AggregateByGo()
+	aggregate.AggregateByGo(ctx, client)
 	elapsed = time.Since(startTime)
 	fmt.Printf("Golangによる集計にかかった時間: %s\n", elapsed)
 

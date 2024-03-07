@@ -1,6 +1,16 @@
+// source データベース
 db = db.getSiblingDB("source")
 
 db.users.drop()
+db.createCollection("users", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "name"],
+    },
+  },
+  validationLevel: "moderate",
+})
 const aliceId = new ObjectId()
 const bobId = new ObjectId()
 const charlieId = new ObjectId()
@@ -11,6 +21,21 @@ db.users.insertMany([
 ])
 
 db.points.drop()
+db.createCollection("points", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "userId", "point"],
+      properties: {
+        point: {
+          bsonType: ["int", "long"],
+          minimum: 0,
+        },
+      },
+    },
+  },
+  validationLevel: "moderate",
+})
 db.points.insertMany([
   { _id: new ObjectId(), userId: aliceId, point: 100 },
   { _id: new ObjectId(), userId: aliceId, point: 200 },
@@ -22,6 +47,16 @@ db.points.insertMany([
   { _id: new ObjectId(), userId: charlieId, point: 600 },
 ])
 
+// aggregate データベース
 db = db.getSiblingDB("aggregate")
 db.leaderboard.drop()
+db.createCollection("leaderboard", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["_id", "userId"],
+    },
+  },
+  validationLevel: "moderate",
+})
 db.leaderboard.createIndex({ userId: 1 }, { unique: true })
