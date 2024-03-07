@@ -73,7 +73,7 @@ func main() {
 
 		// MongoDBで集計
 		startTime := time.Now()
-		aggregate.AggregateByMongoDB(ctx, client)
+		aggregate.AggregateByMongoDB(ctx, client, false)
 		elapsed := time.Since(startTime)
 		fmt.Printf("Method: MongoDB	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
 		if err := mr.createLog("MongoDB", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
@@ -82,7 +82,7 @@ func main() {
 
 		// Goで集計
 		startTime = time.Now()
-		aggregate.AggregateByGo(ctx, client)
+		aggregate.AggregateByGo(ctx, client, false)
 		elapsed = time.Since(startTime)
 		fmt.Printf("Method: Go	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
 		if err := mr.createLog("Go", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {

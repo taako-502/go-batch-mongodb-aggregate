@@ -42,9 +42,10 @@ db.points.insertMany([
   { _id: new ObjectId(), userId: aliceId, point: 300 },
   { _id: new ObjectId(), userId: bobId, point: 200 },
   { _id: new ObjectId(), userId: bobId, point: 400 },
+  { _id: new ObjectId(), userId: bobId, point: 600 },
   { _id: new ObjectId(), userId: charlieId, point: 300 },
   { _id: new ObjectId(), userId: charlieId, point: 500 },
-  { _id: new ObjectId(), userId: charlieId, point: 600 },
+  { _id: new ObjectId(), userId: charlieId, point: 700 },
 ])
 
 // aggregate データベース

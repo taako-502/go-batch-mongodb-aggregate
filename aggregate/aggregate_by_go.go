@@ -5,45 +5,29 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // TODO: 順位も計算してデータベースに登録する
-func AggregateByGo(ctx context.Context, client *mongo.Client) {
-	pointsCollection := client.Database("source").Collection("points")
-
+func AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) {
 	// MongoDBからすべてのpointsドキュメントを取得
-	cursor, err := pointsCollection.Find(ctx, bson.D{{}})
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer cursor.Close(ctx)
+	points := infrastructure.Find(ctx, client)
 
-	userPoints := make(map[interface{}]int)
-	for cursor.Next(ctx) {
-		var point bson.M
-		if err := cursor.Decode(&point); err != nil {
-			log.Fatal(err)
-		}
-
-		userId := point["userId"]
-		pointValue, ok := point["point"].(int)
-		if !ok {
-			continue
-		}
-
-		if _, exists := userPoints[userId]; !exists {
-			userPoints[userId] = pointValue
-		} else {
-			userPoints[userId] += pointValue
-		}
+	userPoints := make(map[string]int)
+	for _, p := range points {
+		userPoints[p.UserID] += p.Point
 	}
 
 	// 結果を表示
-	for userId, totalPoint := range userPoints {
-		fmt.Printf("UserID: %v, TotalPoint: %v\n", userId, totalPoint)
+	if isPrint {
+		fmt.Println("")
+		fmt.Println("Goで集計した結果")
+		for userId, totalPoint := range userPoints {
+			fmt.Printf("UserID: %v, TotalPoint: %v\n", userId, totalPoint)
+		}
 	}
 
 	// rankingデータベースのrankingテーブルを更新

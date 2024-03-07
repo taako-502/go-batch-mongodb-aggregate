@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
+	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,12 +37,12 @@ func main() {
 
 	// MongoDBで集計
 	startTime := time.Now()
-	aggregate.AggregateByMongoDB(ctx, client)
+	aggregate.AggregateByMongoDB(ctx, client, true)
 	monogDBElapsed := time.Since(startTime)
 
 	// Goで集計
 	startTime = time.Now()
-	aggregate.AggregateByGo(ctx, client)
+	aggregate.AggregateByGo(ctx, client, true)
 	goElapsed := time.Since(startTime)
 
 	fmt.Println("") // 改行
@@ -57,12 +58,6 @@ type mainReciever struct {
 type user struct {
 	ID   primitive.ObjectID `bson:"_id"`
 	Name string             `bson:"name"`
-}
-
-type point struct {
-	ID     primitive.ObjectID `bson:"_id"`
-	UserID string             `bson:"userId"`
-	Point  int                `bson:"point"`
 }
 
 func (m mainReciever) printSourceUsers() {
@@ -86,15 +81,7 @@ func (m mainReciever) printSourceUsers() {
 
 func (m mainReciever) printSourcePoints() {
 	// pointsコレクションからデータを取得
-	var points []point
-	pointsCollection := m.client.Database("source").Collection("points")
-	cursor, err := pointsCollection.Find(m.ctx, bson.M{})
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err = cursor.All(m.ctx, &points); err != nil {
-		log.Fatal(err)
-	}
+	points := infrastructure.Find(m.ctx, m.client)
 
 	// 取得したpointsのデータを出力
 	fmt.Println("# points:")
