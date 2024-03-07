@@ -1,0 +1,5 @@
+package aggregate
+
+func AggregateByGo() {
+
+}
