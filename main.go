@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -20,10 +21,8 @@ type pattern struct {
 }
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx := context.Background()
 
-	// MongoDBに接続
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +48,7 @@ func main() {
 		{numberOfUsers: 1000000, numberOfPoints: 1000},
 		{numberOfUsers: 1000000, numberOfPoints: 10000},
 		// 極端に増やしてみる
-		{numberOfUsers: 100000000, numberOfPoints: 100000},
+		{numberOfUsers: 100000000, numberOfPoints: 1000000},
 	}
 
 	for _, p := range patterns {
@@ -77,12 +76,18 @@ func main() {
 		aggregate.AggregateByMongoDB(ctx, client)
 		elapsed := time.Since(startTime)
 		fmt.Printf("Method: MongoDB	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
+		if err := mr.createLog("MongoDB", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
+			log.Fatal(err)
+		}
 
 		// Goで集計
 		startTime = time.Now()
 		aggregate.AggregateByGo(ctx, client)
 		elapsed = time.Since(startTime)
 		fmt.Printf("Method: Go	ユーザ数: %d 1ユーザあたりのポイント数: %d	集計にかかった時間: %s\n", p.numberOfUsers, p.numberOfPoints, elapsed)
+		if err := mr.createLog("Go", p.numberOfUsers, p.numberOfPoints, elapsed); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
@@ -130,4 +135,9 @@ func generatePoints(userIDs []primitive.ObjectID, numberOfPoints int) []interfac
 		}
 	}
 	return generatedPoints
+}
+
+func (m mainReciever) createLog(method string, numberOfUsers int, numberOfPoints int, elapsed time.Duration) error {
+	_, err := m.client.Database("aggregate").Collection("logs").InsertOne(m.ctx, bson.M{"method": method, "numberOfUsers": numberOfUsers, "numberOfPoints": numberOfPoints, "elapsed": elapsed})
+	return err
 }
