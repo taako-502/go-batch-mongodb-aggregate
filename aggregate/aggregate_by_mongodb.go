@@ -36,7 +36,7 @@ func AggregateByMongoDB(ctx context.Context, client *mongo.Client) {
 	// rankingデータベースのrankingテーブルを更新
 	rankingCollection := client.Database("aggregate").Collection("leaderboard")
 	for _, result := range results {
-		filter := bson.M{"pointId": result["_id"]}
+		filter := bson.M{"userId": result["_id"]}
 		update := bson.M{"$set": bson.M{"totalPoint": result["totalPoint"]}}
 		options := options.Update().SetUpsert(true)
 		_, err := rankingCollection.UpdateOne(ctx, filter, update, options)

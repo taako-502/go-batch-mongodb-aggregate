@@ -32,5 +32,10 @@ func main() {
 	elapsed := time.Since(startTime)
 	fmt.Printf("MongoDBによる集計にかかった時間: %s\n", elapsed)
 
+	startTime = time.Now()
+	aggregate.AggregateByGo()
+	elapsed = time.Since(startTime)
+	fmt.Printf("Golangによる集計にかかった時間: %s\n", elapsed)
+
 	fmt.Println("順位表を更新しました")
 }

@@ -21,3 +21,7 @@ db.points.insertMany([
   { _id: new ObjectId(), userId: charlieId, point: 500 },
   { _id: new ObjectId(), userId: charlieId, point: 600 },
 ])
+
+db = db.getSiblingDB("aggregate")
+db.leaderboard.drop()
+db.leaderboard.createIndex({ userId: 1 }, { unique: true })
