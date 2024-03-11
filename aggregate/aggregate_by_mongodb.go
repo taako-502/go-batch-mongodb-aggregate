@@ -3,52 +3,58 @@ package aggregate
 import (
 	"context"
 	"fmt"
-	"log"
-	"strings"
+	"sort"
+	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// TODO: 順位も計算してデータベースに登録する
-func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) {
-	// pointsコレクションからデータを集計
-	pointsCollection := client.Database("source").Collection("points")
-	matchStage := bson.D{{Key: "$match", Value: bson.D{{}}}}
-	groupStage := bson.D{{Key: "$group", Value: bson.D{{Key: "_id", Value: "$userId"}, {Key: "totalPoint", Value: bson.D{{Key: "$sum", Value: "$point"}}}}}}
-	sortStage := bson.D{{Key: "$sort", Value: bson.D{{Key: "totalPoint", Value: -1}}}}
-
-	cursor, err := pointsCollection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, sortStage})
+func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
+	results, err := infrastructure.AggregateUserPoints(client, ctx)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to aggregate points: %w", err)
 	}
-	defer cursor.Close(ctx)
 
-	var results []bson.M
-	if err = cursor.All(ctx, &results); err != nil {
-		log.Fatal(err)
+	// rankingデータベースのrankingテーブルを更新
+	var leaderboards []infrastructure.Leaderboard
+	now := time.Now()
+	for _, r := range results {
+		leaderboards = append(leaderboards, infrastructure.Leaderboard{
+			UserID:     r.UserID,
+			Method:     "mongodb",
+			TotalPoint: r.TotalPoint,
+			CreatedAt:  primitive.NewDateTimeFromTime(now),
+			UpdatedAt:  primitive.NewDateTimeFromTime(now),
+		})
+	}
+
+	// 順位格納
+	sort.Slice(leaderboards, func(i, j int) bool {
+		return leaderboards[i].TotalPoint > leaderboards[j].TotalPoint
+	})
+
+	for i := range leaderboards {
+		leaderboards[i].Rank = i + 1
+	}
+
+	// rankingデータベースのrankingテーブルを更新
+	for _, l := range leaderboards {
+		_, err := infrastructure.UpsertLeaderboard(ctx, client, &l)
+		if err != nil {
+			return fmt.Errorf("failed to upsert leaderboard: %w", err)
+		}
 	}
 
 	// 結果を表示
 	if isPrint {
+		fmt.Println("")
 		fmt.Println("MongoDBの集計関数で集計した結果")
-		for _, totalPoint := range results {
-			ID := strings.Replace(fmt.Sprintf("%v", totalPoint["_id"]), "ObjectID(\"", "", -1)
-			ID = strings.Replace(ID, "\")", "", -1)
-			fmt.Printf("UserID: %v, TotalPoint: %v\n", ID, totalPoint["totalPoint"])
+		for _, l := range leaderboards {
+			fmt.Printf("UserID: %v, TotalPoint: %v\n", l.UserID, l.TotalPoint)
 		}
 	}
 
-	// rankingデータベースのrankingテーブルを更新
-	rankingCollection := client.Database("aggregate").Collection("leaderboard")
-	for _, result := range results {
-		filter := bson.M{"userId": result["_id"]}
-		update := bson.M{"$set": bson.M{"totalPoint": result["totalPoint"]}}
-		options := options.Update().SetUpsert(true)
-		_, err := rankingCollection.UpdateOne(ctx, filter, update, options)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	return nil
 }

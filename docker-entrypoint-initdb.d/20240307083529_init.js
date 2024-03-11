@@ -60,4 +60,4 @@ db.createCollection("leaderboard", {
   },
   validationLevel: "moderate",
 })
-db.leaderboard.createIndex({ userId: 1 }, { unique: true })
+db.leaderboard.createIndex({ userId: 1, method: 1 }, { unique: true })

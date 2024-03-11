@@ -37,12 +37,16 @@ func main() {
 
 	// MongoDBで集計
 	startTime := time.Now()
-	aggregate.AggregateByMongoDB(ctx, client, true)
+	if err := aggregate.AggregateByMongoDB(ctx, client, true); err != nil {
+		log.Fatal(err)
+	}
 	monogDBElapsed := time.Since(startTime)
 
 	// Goで集計
 	startTime = time.Now()
-	aggregate.AggregateByGo(ctx, client, true)
+	if err := aggregate.AggregateByGo(ctx, client, true); err != nil {
+		log.Fatal(err)
+	}
 	goElapsed := time.Since(startTime)
 
 	fmt.Println("") // 改行
