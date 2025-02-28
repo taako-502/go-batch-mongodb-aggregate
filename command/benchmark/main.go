@@ -10,10 +10,10 @@ import (
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
 	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type pattern struct {
@@ -24,7 +24,7 @@ type pattern struct {
 func main() {
 	ctx := context.Background()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_BENCHIMARK_URL")))
+	client, err := mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGODB_BENCHIMARK_URL")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func main() {
 		client.Database("source").Collection("users").InsertMany(ctx, users)
 
 		// ポイントデータを挿入
-		var userIDs []primitive.ObjectID
+		var userIDs []bson.ObjectID
 		for _, item := range users {
 			if p, ok := item.(infrastructure.Point); ok {
 				userIDs = append(userIDs, p.UserID)
@@ -108,27 +108,27 @@ func (m mainReciever) cleanUp(databaseName, collectionName string) {
 }
 
 type users struct {
-	id   primitive.ObjectID `bson:"id"`
-	name string             `bson:"name"`
+	id   bson.ObjectID `bson:"id"`
+	name string        `bson:"name"`
 }
 
 func generateUsers(numberOfUsers int) []interface{} {
 	var generatedUsers []interface{}
 	for i := range numberOfUsers {
-		user := users{id: primitive.NewObjectID(), name: fmt.Sprintf("user%v", i)}
+		user := users{id: bson.NewObjectID(), name: fmt.Sprintf("user%v", i)}
 		generatedUsers = append(generatedUsers, user)
 	}
 	return generatedUsers
 }
 
-func generatePoints(userIDs []primitive.ObjectID, numberOfPoints int) []interface{} {
+func generatePoints(userIDs []bson.ObjectID, numberOfPoints int) []interface{} {
 	var generatedPoints []interface{}
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
 
 	for _, ID := range userIDs {
 		for range numberOfPoints {
-			generatedPoints = append(generatedPoints, infrastructure.Point{ID: primitive.NewObjectID(), UserID: ID, Point: r.Intn(2000) + 1}) // 1〜2000のランダムな値
+			generatedPoints = append(generatedPoints, infrastructure.Point{ID: bson.NewObjectID(), UserID: ID, Point: r.Intn(2000) + 1}) // 1〜2000のランダムな値
 		}
 	}
 	return generatedPoints

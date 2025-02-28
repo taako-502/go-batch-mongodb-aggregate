@@ -4,20 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type Leaderboard struct {
-	ID         primitive.ObjectID `bson:"_id,omitempty"`
-	UserID     primitive.ObjectID `bson:"userId"`
-	Method     string             `bson:"method"`
-	TotalPoint int                `bson:"totalPoint"`
-	Rank       int                `bson:"rank"`
-	CreatedAt  primitive.DateTime `bson:"createdAt"`
-	UpdatedAt  primitive.DateTime `bson:"updatedAt"`
+	ID         bson.ObjectID `bson:"_id,omitempty"`
+	UserID     bson.ObjectID `bson:"userId"`
+	Method     string        `bson:"method"`
+	TotalPoint int           `bson:"totalPoint"`
+	Rank       int           `bson:"rank"`
+	CreatedAt  bson.DateTime `bson:"createdAt"`
+	UpdatedAt  bson.DateTime `bson:"updatedAt"`
 }
 
 func UpsertLeaderboard(ctx context.Context, client *mongo.Client, Leaderboard *Leaderboard) (*Leaderboard, error) {
@@ -32,15 +31,14 @@ func UpsertLeaderboard(ctx context.Context, client *mongo.Client, Leaderboard *L
 			"createdAt": Leaderboard.CreatedAt,
 		},
 	}
-	upsert := true
-	opts := options.UpdateOptions{Upsert: &upsert}
-	result, err := client.Database("aggregate").Collection("leaderboard").UpdateOne(ctx, filter, &update, &opts)
+	opts := options.UpdateOne().SetUpsert(true)
+	result, err := client.Database("aggregate").Collection("leaderboard").UpdateOne(ctx, filter, &update, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ranking: %v", err)
 	}
 
 	if result.UpsertedID != nil {
-		Leaderboard.ID = result.UpsertedID.(primitive.ObjectID)
+		Leaderboard.ID = result.UpsertedID.(bson.ObjectID)
 	}
 
 	return Leaderboard, nil

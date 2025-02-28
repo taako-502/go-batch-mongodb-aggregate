@@ -4,15 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type UserPoints struct {
-	UserID     primitive.ObjectID `bson:"_id"`
-	TotalPoint int                `bson:"totalPoint"`
+	UserID     bson.ObjectID `bson:"_id"`
+	TotalPoint int           `bson:"totalPoint"`
 }
 
 func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoints, error) {

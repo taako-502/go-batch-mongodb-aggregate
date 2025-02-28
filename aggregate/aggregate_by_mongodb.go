@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
@@ -25,8 +25,8 @@ func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool)
 			UserID:     r.UserID,
 			Method:     "mongodb",
 			TotalPoint: r.TotalPoint,
-			CreatedAt:  primitive.NewDateTimeFromTime(now),
-			UpdatedAt:  primitive.NewDateTimeFromTime(now),
+			CreatedAt:  bson.NewDateTimeFromTime(now),
+			UpdatedAt:  bson.NewDateTimeFromTime(now),
 		})
 	}
 

@@ -9,16 +9,15 @@ import (
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
 	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 func main() {
 	ctx := context.Background()
 
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
+	client, err := mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGODB_URL")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -60,8 +59,8 @@ type mainReciever struct {
 }
 
 type user struct {
-	ID   primitive.ObjectID `bson:"_id"`
-	Name string             `bson:"name"`
+	ID   bson.ObjectID `bson:"_id"`
+	Name string        `bson:"name"`
 }
 
 func (m mainReciever) printSourceUsers() {

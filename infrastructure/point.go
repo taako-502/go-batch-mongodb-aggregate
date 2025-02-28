@@ -4,15 +4,14 @@ import (
 	"context"
 	"log"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 type Point struct {
-	ID     primitive.ObjectID `bson:"_id"`
-	UserID primitive.ObjectID `bson:"userId"`
-	Point  int                `bson:"point"`
+	ID     bson.ObjectID `bson:"_id"`
+	UserID bson.ObjectID `bson:"userId"`
+	Point  int           `bson:"point"`
 }
 
 func Find(ctx context.Context, client *mongo.Client) []Point {
