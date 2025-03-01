@@ -1,11 +1,14 @@
-.PHONY: run
+.PHONY: db db-stop benchmark test-benchmark
 
-run:
-	go run main.go
+db:
+	docker run -d --name go_vs_aggregation_pipeline  -p 27017:27017 mongo
 
-benchimark:
-	go run command/benchmark/main.go
+db-stop:
+	docker stop go_vs_aggregation_pipeline  || true
+	docker rm go_vs_aggregation_pipeline  || true
 
-# benchmark の測定結果を tsv で出力
-export_log_tsv:
-	go run command/log/main.go > log.tsv
+benchmark: db-stop
+	@$(MAKE) db
+	@echo "Running benchmark tests..."
+	@go test -bench . -benchmem | tee benchmark_results.txt || true
+	@$(MAKE) db-stop
