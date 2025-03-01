@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
-	"github.com/taako-502/go-batch-mongodb-aggregate/benchmark"
-	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark/aggregate"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
