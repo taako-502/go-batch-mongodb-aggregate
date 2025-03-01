@@ -2,9 +2,9 @@ goos: darwin
 goarch: arm64
 pkg: github.com/taako-502/go-batch-mongodb-aggregate
 cpu: Apple M4
-BenchmarkAggregationPipeline/Benchmark_{1000_100}-10         	       4	 296979146 ns/op	15424510 B/op	  164776 allocs/op
-BenchmarkAggregationPipeline/Benchmark_{1000_1000}-10        	       1	1105499458 ns/op	33314680 B/op	  337308 allocs/op
-BenchmarkGo/Benchmark_{1000_100}-10                          	       3	 365656986 ns/op	512492010 B/op	 1740309 allocs/op
-BenchmarkGo/Benchmark_{1000_1000}-10                         	       1	1778179708 ns/op	5544177888 B/op	17773016 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_100}-10         	       4	 287030750 ns/op	15429114 B/op	  164787 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_1000}-10        	       1	1096988667 ns/op	33304168 B/op	  337272 allocs/op
+BenchmarkGo/Benchmark_{1000_100}-10                          	       3	 366272500 ns/op	512491421 B/op	 1740549 allocs/op
+BenchmarkGo/Benchmark_{1000_1000}-10                         	       1	1807535000 ns/op	5544257864 B/op	17773889 allocs/op
 PASS
-ok  	github.com/taako-502/go-batch-mongodb-aggregate	11.387s
+ok  	github.com/taako-502/go-batch-mongodb-aggregate	11.419s
