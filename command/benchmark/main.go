@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/taako-502/go-batch-mongodb-aggregate/aggregate"
 	"github.com/taako-502/go-batch-mongodb-aggregate/infrastructure"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -23,6 +24,9 @@ type pattern struct {
 
 func main() {
 	ctx := context.Background()
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, using system environment variables")
+	}
 
 	client, err := mongo.Connect(options.Client().ApplyURI(os.Getenv("MONGODB_BENCHIMARK_URL")))
 	if err != nil {
