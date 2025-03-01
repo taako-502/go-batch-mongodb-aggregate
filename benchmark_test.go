@@ -10,19 +10,13 @@ import (
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark/aggregate"
-	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var client *mongo.Client
-
-// User ユーザーデータを表す構造体
-type User struct {
-	ID   bson.ObjectID `bson:"_id"`
-	Name string        `bson:"name"`
-}
 
 type pattern struct {
 	numberOfUsers  int
@@ -121,10 +115,10 @@ func BenchmarkGo(b *testing.B) {
 	}
 }
 
-func generateUsers(numberOfUsers int) []User {
-	var users []User
+func generateUsers(numberOfUsers int) []model.User {
+	var users []model.User
 	for i := range numberOfUsers {
-		users = append(users, User{
+		users = append(users, model.User{
 			ID:   bson.NewObjectID(),
 			Name: fmt.Sprintf("user%v", i),
 		})
@@ -139,7 +133,7 @@ func generatePoints(userIDs []bson.ObjectID, numberOfPoints int) []interface{} {
 
 	for _, ID := range userIDs {
 		for range numberOfPoints {
-			generatedPoints = append(generatedPoints, infrastructure.Point{
+			generatedPoints = append(generatedPoints, model.Point{
 				ID:     bson.NewObjectID(),
 				UserID: ID,
 				Point:  r.Intn(2000) + 1, // 1〜2000のランダムな値

@@ -4,18 +4,13 @@ import (
 	"context"
 	"log"
 
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-type Point struct {
-	ID     bson.ObjectID `bson:"_id"`
-	UserID bson.ObjectID `bson:"userId"`
-	Point  int           `bson:"point"`
-}
-
-func Find(ctx context.Context, client *mongo.Client) []Point {
-	var points []Point
+func Find(ctx context.Context, client *mongo.Client) []model.Point {
+	var points []model.Point
 	pointsCollection := client.Database("source").Collection("points")
 	cursor, err := pointsCollection.Find(ctx, bson.M{})
 	if err != nil {

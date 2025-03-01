@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -18,10 +19,10 @@ func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool)
 	}
 
 	// rankingデータベースのrankingテーブルを更新
-	var leaderboards []infrastructure.Leaderboard
+	var leaderboards []model.Leaderboard
 	now := time.Now()
 	for _, r := range results {
-		leaderboards = append(leaderboards, infrastructure.Leaderboard{
+		leaderboards = append(leaderboards, model.Leaderboard{
 			UserID:     r.UserID,
 			Method:     "mongodb",
 			TotalPoint: r.TotalPoint,

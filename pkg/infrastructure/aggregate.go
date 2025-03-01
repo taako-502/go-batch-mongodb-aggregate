@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-type UserPoints struct {
-	UserID     bson.ObjectID `bson:"_id"`
-	TotalPoint int           `bson:"totalPoint"`
-}
-
-func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoints, error) {
+func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]model.UserPoints, error) {
 	pointsCollection := client.Database("source").Collection("points")
 
 	// 集計ステージの定義
@@ -33,7 +29,7 @@ func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoint
 	defer cursor.Close(ctx)
 
 	// 結果をスライスに格納
-	var results []UserPoints
+	var results []model.UserPoints
 	if err = cursor.All(ctx, &results); err != nil {
 		return nil, fmt.Errorf("failed to get all results: %w", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
@@ -20,10 +21,10 @@ func AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) erro
 		userPoints[p.UserID] += p.Point
 	}
 
-	var leaderboards []infrastructure.Leaderboard
+	var leaderboards []model.Leaderboard
 	now := time.Now()
 	for userID, point := range userPoints {
-		leaderboards = append(leaderboards, infrastructure.Leaderboard{
+		leaderboards = append(leaderboards, model.Leaderboard{
 			UserID:     userID,
 			Method:     "go",
 			TotalPoint: point,
