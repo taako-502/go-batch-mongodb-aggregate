@@ -20,7 +20,7 @@ var client *mongo.Client
 
 // User ユーザーデータを表す構造体
 type User struct {
-	ID   bson.ObjectID `bson:"id"`
+	ID   bson.ObjectID `bson:"_id"`
 	Name string        `bson:"name"`
 }
 
