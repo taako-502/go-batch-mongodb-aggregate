@@ -1,4 +1,4 @@
-package model
+package infrastructure
 
 import "go.mongodb.org/mongo-driver/v2/bson"
 

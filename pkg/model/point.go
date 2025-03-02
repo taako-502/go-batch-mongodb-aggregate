@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
+// Point ユーザーのポイントを格納する
 type Point struct {
 	ID     bson.ObjectID `bson:"_id"`
 	UserID bson.ObjectID `bson:"userId"`
