@@ -10,5 +10,5 @@ db-stop:
 benchmark: db-stop
 	@$(MAKE) db
 	@echo "Running benchmark tests..."
-	@go test -bench . -benchmem | tee benchmark_results.txt || true
+	@go test -bench . -benchmem -timeout=60m | tee benchmark_results.txt || true
 	@$(MAKE) db-stop
