@@ -13,7 +13,7 @@ import (
 
 func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) error {
 	// MongoDBからすべてのpointsドキュメントを取得
-	points := a.infrastructure.Find(ctx, client)
+	points := a.Infrastructure.Find(ctx, client)
 
 	userPoints := make(map[bson.ObjectID]int)
 	for _, p := range points {
@@ -43,7 +43,7 @@ func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isP
 
 	// rankingデータベースのrankingテーブルを更新
 	for _, l := range leaderboards {
-		_, err := a.infrastructure.UpsertLeaderboard(ctx, client, &l)
+		_, err := a.Infrastructure.UpsertLeaderboard(ctx, client, &l)
 		if err != nil {
 			return fmt.Errorf("failed to upsert leaderboard: %w", err)
 		}

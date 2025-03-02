@@ -11,7 +11,7 @@ import (
 
 func (i *Infrastructure) Find(ctx context.Context, client *mongo.Client) []model.Point {
 	var points []model.Point
-	cursor, err := i.sourcePointCol.Find(ctx, bson.M{})
+	cursor, err := i.SourcePointCol.Find(ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -3,13 +3,15 @@ package infrastructure
 import "go.mongodb.org/mongo-driver/v2/mongo"
 
 type Infrastructure struct {
-	sourcePointCol          *mongo.Collection
-	aggregateLeaderboardCol *mongo.Collection
+	SourcePointCol          *mongo.Collection
+	SourceUserCol           *mongo.Collection
+	AggregateLeaderboardCol *mongo.Collection
 }
 
 func NewInfrastructure(client *mongo.Client) *Infrastructure {
 	return &Infrastructure{
-		sourcePointCol:          client.Database("source").Collection("points"),
-		aggregateLeaderboardCol: client.Database("aggregate").Collection("leaderboard"),
+		SourcePointCol:          client.Database("source").Collection("points"),
+		SourceUserCol:           client.Database("source").Collection("users"),
+		AggregateLeaderboardCol: client.Database("aggregate").Collection("leaderboard"),
 	}
 }

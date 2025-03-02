@@ -12,7 +12,7 @@ import (
 )
 
 func (a *Aggregate) AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
-	results, err := a.infrastructure.AggregateUserPoints(client, ctx)
+	results, err := a.Infrastructure.AggregateUserPoints(client, ctx)
 	if err != nil {
 		return fmt.Errorf("failed to aggregate points: %w", err)
 	}
@@ -41,7 +41,7 @@ func (a *Aggregate) AggregateByMongoDB(ctx context.Context, client *mongo.Client
 
 	// rankingデータベースのrankingテーブルを更新
 	for _, l := range leaderboards {
-		if _, err := a.infrastructure.UpsertLeaderboard(ctx, client, &l); err != nil {
+		if _, err := a.Infrastructure.UpsertLeaderboard(ctx, client, &l); err != nil {
 			return fmt.Errorf("failed to upsert leaderboard: %w", err)
 		}
 	}

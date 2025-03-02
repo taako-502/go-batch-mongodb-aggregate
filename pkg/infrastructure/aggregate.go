@@ -19,7 +19,7 @@ func (i *Infrastructure) AggregateUserPoints(client *mongo.Client, ctx context.C
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{{Key: "totalPoint", Value: -1}}}}
 
 	// 集計クエリを実行
-	cursor, err := i.sourcePointCol.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, sortStage}, options.Aggregate())
+	cursor, err := i.SourcePointCol.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, sortStage}, options.Aggregate())
 	if err != nil {
 		return nil, fmt.Errorf("failed to aggregate points: %w", err)
 	}

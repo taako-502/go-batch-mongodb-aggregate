@@ -54,13 +54,13 @@ func init() {
 }
 
 func cleanup(ctx context.Context) error {
-	if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
+	if err := benchmark.Cleanup(ctx, a.Infrastructure.SourceUserCol); err != nil {
 		return err
 	}
-	if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
+	if err := benchmark.Cleanup(ctx, a.Infrastructure.SourcePointCol); err != nil {
 		return err
 	}
-	if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+	if err := benchmark.Cleanup(ctx, a.Infrastructure.AggregateLeaderboardCol); err != nil {
 		return err
 	}
 	return nil
@@ -77,7 +77,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 
 			// ユーザーデータを挿入
 			users := model.GenerateUsers(n.numberOfUsers)
-			if _, err := client.Database("source").Collection("users").InsertMany(ctx, users); err != nil {
+			if _, err := a.Infrastructure.SourceUserCol.InsertMany(ctx, users); err != nil {
 				b.Fatal(err)
 			}
 
@@ -87,7 +87,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 				userIDs = append(userIDs, u.ID)
 			}
 			points := model.GeneratePoints(userIDs, n.numberOfPoints)
-			if _, err := client.Database("source").Collection("points").InsertMany(ctx, points); err != nil {
+			if _, err := a.Infrastructure.SourcePointCol.InsertMany(ctx, points); err != nil {
 				b.Fatal(err)
 			}
 
@@ -109,7 +109,7 @@ func BenchmarkGo(b *testing.B) {
 			}
 
 			users := model.GenerateUsers(n.numberOfUsers)
-			if _, err := client.Database("source").Collection("users").InsertMany(ctx, users); err != nil {
+			if _, err := a.Infrastructure.SourceUserCol.InsertMany(ctx, users); err != nil {
 				b.Fatal(err)
 			}
 
@@ -118,7 +118,7 @@ func BenchmarkGo(b *testing.B) {
 				userIDs = append(userIDs, u.ID)
 			}
 			points := model.GeneratePoints(userIDs, n.numberOfPoints)
-			if _, err := client.Database("source").Collection("points").InsertMany(ctx, points); err != nil {
+			if _, err := a.Infrastructure.SourcePointCol.InsertMany(ctx, points); err != nil {
 				b.Fatal(err)
 			}
 
