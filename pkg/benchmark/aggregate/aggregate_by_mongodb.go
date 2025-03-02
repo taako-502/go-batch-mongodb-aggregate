@@ -12,7 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
+func (a *Aggregate) AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
 	results, err := infrastructure.AggregateUserPoints(client, ctx)
 	if err != nil {
 		return fmt.Errorf("failed to aggregate points: %w", err)
@@ -42,8 +42,7 @@ func AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool)
 
 	// rankingデータベースのrankingテーブルを更新
 	for _, l := range leaderboards {
-		_, err := infrastructure.UpsertLeaderboard(ctx, client, &l)
-		if err != nil {
+		if _, err := a.infrastructure.UpsertLeaderboard(ctx, client, &l); err != nil {
 			return fmt.Errorf("failed to upsert leaderboard: %w", err)
 		}
 	}

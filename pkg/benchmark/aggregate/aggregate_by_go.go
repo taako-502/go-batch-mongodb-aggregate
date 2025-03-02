@@ -6,15 +6,14 @@ import (
 	"sort"
 	"time"
 
-	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) error {
+func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) error {
 	// MongoDBからすべてのpointsドキュメントを取得
-	points := infrastructure.Find(ctx, client)
+	points := a.infrastructure.Find(ctx, client)
 
 	userPoints := make(map[bson.ObjectID]int)
 	for _, p := range points {
@@ -44,7 +43,7 @@ func AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) erro
 
 	// rankingデータベースのrankingテーブルを更新
 	for _, l := range leaderboards {
-		_, err := infrastructure.UpsertLeaderboard(ctx, client, &l)
+		_, err := a.infrastructure.UpsertLeaderboard(ctx, client, &l)
 		if err != nil {
 			return fmt.Errorf("failed to upsert leaderboard: %w", err)
 		}

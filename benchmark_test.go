@@ -8,6 +8,7 @@ import (
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark/aggregate"
+	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -15,6 +16,7 @@ import (
 )
 
 var client *mongo.Client
+var a *aggregate.Aggregate
 
 type pattern struct {
 	numberOfUsers  int
@@ -46,6 +48,22 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	a = aggregate.NewAggregate(
+		infrastructure.NewInfrastructure(client),
+	)
+}
+
+func cleanup(ctx context.Context) error {
+	if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
+		return err
+	}
+	if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
+		return err
+	}
+	if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+		return err
+	}
+	return nil
 }
 
 // BenchmarkAggregationPipeline Aggregation Pipelineで集計する
@@ -53,13 +71,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 	ctx := context.Background()
 	for _, n := range benchmarkPattern {
 		b.Run("Benchmark_"+fmt.Sprint(n), func(b *testing.B) {
-			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
-				b.Fatal(err)
-			}
-			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
-				b.Fatal(err)
-			}
-			if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+			if err := cleanup(ctx); err != nil {
 				b.Fatal(err)
 			}
 
@@ -81,7 +93,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 
 			b.ResetTimer()
 			for b.Loop() {
-				aggregate.AggregateByMongoDB(ctx, client, false)
+				a.AggregateByMongoDB(ctx, client, false)
 			}
 		})
 	}
@@ -92,13 +104,7 @@ func BenchmarkGo(b *testing.B) {
 	ctx := context.Background()
 	for _, n := range benchmarkPattern {
 		b.Run("Benchmark_"+fmt.Sprint(n), func(b *testing.B) {
-			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
-				b.Fatal(err)
-			}
-			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
-				b.Fatal(err)
-			}
-			if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+			if err := cleanup(ctx); err != nil {
 				b.Fatal(err)
 			}
 
@@ -118,7 +124,7 @@ func BenchmarkGo(b *testing.B) {
 
 			b.ResetTimer()
 			for b.Loop() {
-				aggregate.AggregateByGo(ctx, client, false)
+				a.AggregateByGo(ctx, client, false)
 			}
 		})
 	}

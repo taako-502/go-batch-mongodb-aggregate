@@ -9,10 +9,9 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func Find(ctx context.Context, client *mongo.Client) []model.Point {
+func (i *Infrastructure) Find(ctx context.Context, client *mongo.Client) []model.Point {
 	var points []model.Point
-	pointsCollection := client.Database("source").Collection("points")
-	cursor, err := pointsCollection.Find(ctx, bson.M{})
+	cursor, err := i.sourcePointCol.Find(ctx, bson.M{})
 	if err != nil {
 		log.Fatal(err)
 	}

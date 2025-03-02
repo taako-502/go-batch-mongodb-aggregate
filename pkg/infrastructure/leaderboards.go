@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func UpsertLeaderboard(ctx context.Context, client *mongo.Client, Leaderboard *model.Leaderboard) (*model.Leaderboard, error) {
+func (i *Infrastructure) UpsertLeaderboard(ctx context.Context, client *mongo.Client, Leaderboard *model.Leaderboard) (*model.Leaderboard, error) {
 	filter := bson.M{"userId": Leaderboard.UserID, "method": Leaderboard.Method}
 	update := bson.M{
 		"$set": bson.M{
@@ -23,7 +23,7 @@ func UpsertLeaderboard(ctx context.Context, client *mongo.Client, Leaderboard *m
 		},
 	}
 	opts := options.UpdateOne().SetUpsert(true)
-	result, err := client.Database("aggregate").Collection("leaderboard").UpdateOne(ctx, filter, &update, opts)
+	result, err := i.aggregateLeaderboardCol.UpdateOne(ctx, filter, &update, opts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update ranking: %v", err)
 	}
