@@ -4,9 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"testing"
-	"time"
 
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/benchmark/aggregate"
@@ -53,15 +51,20 @@ func init() {
 // BenchmarkAggregationPipeline Aggregation Pipelineで集計する
 func BenchmarkAggregationPipeline(b *testing.B) {
 	ctx := context.Background()
-	// コレクションを初期化
-	benchmark.Cleanup(ctx, client.Database("source").Collection("users"))
-	benchmark.Cleanup(ctx, client.Database("source").Collection("points"))
-	benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard"))
-
 	for _, n := range benchmarkPattern {
 		b.Run("Benchmark_"+fmt.Sprint(n), func(b *testing.B) {
+			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
+				b.Fatal(err)
+			}
+			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
+				b.Fatal(err)
+			}
+			if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+				b.Fatal(err)
+			}
+
 			// ユーザーデータを挿入
-			users := generateUsers(n.numberOfUsers)
+			users := model.GenerateUsers(n.numberOfUsers)
 			if _, err := client.Database("source").Collection("users").InsertMany(ctx, users); err != nil {
 				b.Fatal(err)
 			}
@@ -71,7 +74,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 			for _, u := range users {
 				userIDs = append(userIDs, u.ID)
 			}
-			points := generatePoints(userIDs, n.numberOfPoints)
+			points := model.GeneratePoints(userIDs, n.numberOfPoints)
 			if _, err := client.Database("source").Collection("points").InsertMany(ctx, points); err != nil {
 				b.Fatal(err)
 			}
@@ -87,13 +90,19 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 // BenchmarkGo Goで集計する
 func BenchmarkGo(b *testing.B) {
 	ctx := context.Background()
-	benchmark.Cleanup(ctx, client.Database("source").Collection("users"))
-	benchmark.Cleanup(ctx, client.Database("source").Collection("points"))
-	benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard"))
-
 	for _, n := range benchmarkPattern {
 		b.Run("Benchmark_"+fmt.Sprint(n), func(b *testing.B) {
-			users := generateUsers(n.numberOfUsers)
+			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("users")); err != nil {
+				b.Fatal(err)
+			}
+			if err := benchmark.Cleanup(ctx, client.Database("source").Collection("points")); err != nil {
+				b.Fatal(err)
+			}
+			if err := benchmark.Cleanup(ctx, client.Database("aggregate").Collection("leaderboard")); err != nil {
+				b.Fatal(err)
+			}
+
+			users := model.GenerateUsers(n.numberOfUsers)
 			if _, err := client.Database("source").Collection("users").InsertMany(ctx, users); err != nil {
 				b.Fatal(err)
 			}
@@ -102,7 +111,7 @@ func BenchmarkGo(b *testing.B) {
 			for _, u := range users {
 				userIDs = append(userIDs, u.ID)
 			}
-			points := generatePoints(userIDs, n.numberOfPoints)
+			points := model.GeneratePoints(userIDs, n.numberOfPoints)
 			if _, err := client.Database("source").Collection("points").InsertMany(ctx, points); err != nil {
 				b.Fatal(err)
 			}
@@ -113,32 +122,4 @@ func BenchmarkGo(b *testing.B) {
 			}
 		})
 	}
-}
-
-func generateUsers(numberOfUsers int) []model.User {
-	var users []model.User
-	for i := range numberOfUsers {
-		users = append(users, model.User{
-			ID:   bson.NewObjectID(),
-			Name: fmt.Sprintf("user%v", i),
-		})
-	}
-	return users
-}
-
-func generatePoints(userIDs []bson.ObjectID, numberOfPoints int) []interface{} {
-	var generatedPoints []interface{}
-	source := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(source)
-
-	for _, ID := range userIDs {
-		for range numberOfPoints {
-			generatedPoints = append(generatedPoints, model.Point{
-				ID:     bson.NewObjectID(),
-				UserID: ID,
-				Point:  r.Intn(2000) + 1, // 1〜2000のランダムな値
-			})
-		}
-	}
-	return generatedPoints
 }
