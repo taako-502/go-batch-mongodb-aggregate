@@ -11,10 +11,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isPrint bool) error {
-	// MongoDBからすべてのpointsドキュメントを取得
+func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client) error {
 	points := a.Infrastructure.Find(ctx, client)
-
 	userPoints := make(map[bson.ObjectID]int)
 	for _, p := range points {
 		userPoints[p.UserID] += p.Point
@@ -32,7 +30,6 @@ func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isP
 		})
 	}
 
-	// 順位格納
 	sort.Slice(leaderboards, func(i, j int) bool {
 		return leaderboards[i].TotalPoint > leaderboards[j].TotalPoint
 	})
@@ -41,20 +38,9 @@ func (a *Aggregate) AggregateByGo(ctx context.Context, client *mongo.Client, isP
 		leaderboards[i].Rank = i + 1
 	}
 
-	// rankingデータベースのrankingテーブルを更新
 	for _, l := range leaderboards {
-		_, err := a.Infrastructure.UpsertLeaderboard(ctx, client, &l)
-		if err != nil {
+		if _, err := a.Infrastructure.UpsertLeaderboard(ctx, client, &l); err != nil {
 			return fmt.Errorf("failed to upsert leaderboard: %w", err)
-		}
-	}
-
-	// 結果を表示
-	if isPrint {
-		fmt.Println("")
-		fmt.Println("Goで集計した結果")
-		for _, l := range leaderboards {
-			fmt.Printf("UserID: %v, TotalPoint: %v\n", l.UserID, l.TotalPoint)
 		}
 	}
 

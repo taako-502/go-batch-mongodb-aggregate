@@ -98,7 +98,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 
 			b.ResetTimer()
 			for b.Loop() {
-				a.AggregateByMongoDB(ctx, client, false)
+				a.AggregateByMongoDB(ctx, client)
 			}
 		})
 	}
@@ -119,7 +119,7 @@ func BenchmarkGo(b *testing.B) {
 
 			b.ResetTimer()
 			for b.Loop() {
-				a.AggregateByGo(ctx, client, false)
+				a.AggregateByGo(ctx, client)
 			}
 		})
 	}
