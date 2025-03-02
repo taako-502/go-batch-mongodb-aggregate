@@ -14,8 +14,8 @@ type Point struct {
 	Point  int           `bson:"point"`
 }
 
-func GeneratePoints(userIDs []bson.ObjectID, numberOfPoints int) []interface{} {
-	var generatedPoints []interface{}
+func GeneratePoints(userIDs []bson.ObjectID, numberOfPoints int) []Point {
+	var generatedPoints []Point
 	source := rand.NewSource(time.Now().UnixNano())
 	r := rand.New(source)
 

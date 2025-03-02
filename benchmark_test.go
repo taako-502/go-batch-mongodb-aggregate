@@ -66,6 +66,23 @@ func cleanup(ctx context.Context) error {
 	return nil
 }
 
+func seed(ctx context.Context, numberOfUsers, numberOfPoints int) error {
+	users := model.GenerateUsers(numberOfUsers)
+	if _, err := a.Infrastructure.SourceUserCol.InsertMany(ctx, users); err != nil {
+		return err
+	}
+
+	var userIDs []bson.ObjectID
+	for _, u := range users {
+		userIDs = append(userIDs, u.ID)
+	}
+	points := model.GeneratePoints(userIDs, numberOfPoints)
+	if _, err := a.Infrastructure.SourcePointCol.InsertMany(ctx, points); err != nil {
+		return err
+	}
+	return nil
+}
+
 // BenchmarkAggregationPipeline Aggregation Pipelineで集計する
 func BenchmarkAggregationPipeline(b *testing.B) {
 	ctx := context.Background()
@@ -75,19 +92,7 @@ func BenchmarkAggregationPipeline(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			// ユーザーデータを挿入
-			users := model.GenerateUsers(n.numberOfUsers)
-			if _, err := a.Infrastructure.SourceUserCol.InsertMany(ctx, users); err != nil {
-				b.Fatal(err)
-			}
-
-			// ポイントデータを挿入
-			var userIDs []bson.ObjectID
-			for _, u := range users {
-				userIDs = append(userIDs, u.ID)
-			}
-			points := model.GeneratePoints(userIDs, n.numberOfPoints)
-			if _, err := a.Infrastructure.SourcePointCol.InsertMany(ctx, points); err != nil {
+			if err := seed(ctx, n.numberOfUsers, n.numberOfPoints); err != nil {
 				b.Fatal(err)
 			}
 
@@ -108,17 +113,7 @@ func BenchmarkGo(b *testing.B) {
 				b.Fatal(err)
 			}
 
-			users := model.GenerateUsers(n.numberOfUsers)
-			if _, err := a.Infrastructure.SourceUserCol.InsertMany(ctx, users); err != nil {
-				b.Fatal(err)
-			}
-
-			var userIDs []bson.ObjectID
-			for _, u := range users {
-				userIDs = append(userIDs, u.ID)
-			}
-			points := model.GeneratePoints(userIDs, n.numberOfPoints)
-			if _, err := a.Infrastructure.SourcePointCol.InsertMany(ctx, points); err != nil {
+			if err := seed(ctx, n.numberOfUsers, n.numberOfPoints); err != nil {
 				b.Fatal(err)
 			}
 
