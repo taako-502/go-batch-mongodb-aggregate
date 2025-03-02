@@ -2,9 +2,17 @@ goos: darwin
 goarch: arm64
 pkg: github.com/taako-502/go-batch-mongodb-aggregate
 cpu: Apple M4
-BenchmarkAggregationPipeline/Benchmark_{1000_100}-10         	       4	 287030750 ns/op	15429114 B/op	  164787 allocs/op
-BenchmarkAggregationPipeline/Benchmark_{1000_1000}-10        	       1	1096988667 ns/op	33304168 B/op	  337272 allocs/op
-BenchmarkGo/Benchmark_{1000_100}-10                          	       3	 366272500 ns/op	512491421 B/op	 1740549 allocs/op
-BenchmarkGo/Benchmark_{1000_1000}-10                         	       1	1807535000 ns/op	5544257864 B/op	17773889 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_1}-10         	       4	 290519927 ns/op	14835394 B/op	  146515 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_10}-10        	       4	 300883250 ns/op	14839452 B/op	  146823 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_100}-10       	       4	 294109802 ns/op	14824186 B/op	  146776 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_1000}-10      	       3	 476146639 ns/op	15206120 B/op	  148017 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_10000}-10     	       1	2425729792 ns/op	18308560 B/op	  158984 allocs/op
+BenchmarkAggregationPipeline/Benchmark_{1000_100000}-10    	       1	32767473042 ns/op	18362432 B/op	  160388 allocs/op
+BenchmarkGo/Benchmark_{1000_1}-10                          	       4	 313427656 ns/op	14874900 B/op	  151577 allocs/op
+BenchmarkGo/Benchmark_{1000_10}-10                         	       4	 296434750 ns/op	59550004 B/op	  294648 allocs/op
+BenchmarkGo/Benchmark_{1000_100}-10                        	       3	 369718708 ns/op	511945202 B/op	 1724508 allocs/op
+BenchmarkGo/Benchmark_{1000_1000}-10                       	       1	1326907541 ns/op	5009963208 B/op	16020050 allocs/op
+BenchmarkGo/Benchmark_{1000_10000}-10                      	       1	9813845208 ns/op	50245794120 B/op	158875494 allocs/op
+BenchmarkGo/Benchmark_{1000_100000}-10                     	       1	122577117000 ns/op	501059249904 B/op	1587428607 allocs/op
 PASS
-ok  	github.com/taako-502/go-batch-mongodb-aggregate	11.419s
+ok  	github.com/taako-502/go-batch-mongodb-aggregate	880.367s
