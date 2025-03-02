@@ -9,9 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoints, error) {
-	pointsCollection := client.Database("source").Collection("points")
-
+func (i *Infrastructure) AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoints, error) {
 	// 集計ステージの定義
 	matchStage := bson.D{{Key: "$match", Value: bson.D{{}}}}
 	groupStage := bson.D{{Key: "$group", Value: bson.D{
@@ -21,7 +19,7 @@ func AggregateUserPoints(client *mongo.Client, ctx context.Context) ([]UserPoint
 	sortStage := bson.D{{Key: "$sort", Value: bson.D{{Key: "totalPoint", Value: -1}}}}
 
 	// 集計クエリを実行
-	cursor, err := pointsCollection.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, sortStage}, options.Aggregate())
+	cursor, err := i.sourcePointCol.Aggregate(ctx, mongo.Pipeline{matchStage, groupStage, sortStage}, options.Aggregate())
 	if err != nil {
 		return nil, fmt.Errorf("failed to aggregate points: %w", err)
 	}

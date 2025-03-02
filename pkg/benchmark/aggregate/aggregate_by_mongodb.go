@@ -6,14 +6,13 @@ import (
 	"sort"
 	"time"
 
-	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/infrastructure"
 	"github.com/taako-502/go-batch-mongodb-aggregate/pkg/model"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 func (a *Aggregate) AggregateByMongoDB(ctx context.Context, client *mongo.Client, isPrint bool) error {
-	results, err := infrastructure.AggregateUserPoints(client, ctx)
+	results, err := a.infrastructure.AggregateUserPoints(client, ctx)
 	if err != nil {
 		return fmt.Errorf("failed to aggregate points: %w", err)
 	}
